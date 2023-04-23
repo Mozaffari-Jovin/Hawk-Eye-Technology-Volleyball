@@ -5,6 +5,9 @@ kernel_sharp = np.array([[0, -1, 0],
 	[-1, 5, -1],
 	[0, -1, 0]])
 
+ball_ys = [] # ball's y-position
+in_out = [] # whether inside the court or not
+
 for i in range(1, 6): # for 5 sequential images
 	img = cv2.imread(f"media/volleyball/{i}.png") # f-string
 	
@@ -23,24 +26,23 @@ for i in range(1, 6): # for 5 sequential images
 	print(circles)
 	# quit()
 
-	circle_max_y = 0 # the lowest initial attitude (measured from the top of the image, i.e. y)
-	ball_out = False
 	if circles is not None:
-		circles = circles.astype(np.uint32) # change float to integer
+		circles = circles[0].astype(np.uint32) # change float to integer
 
-		for circle in circles[0, :]:
-			if circle[1] > circle_max_y:
-				circle_max_y = circle[1]
-				print(f"Max y of circle: {circle_max_y}")
-				if (circle[0] + circle[2]) < 460: # center (x) + radius (r), where 460 pixel refers to the white line (i.e. the column number 460)
-					print(circle[1], circle_max_y)
-					ball_out = True
+		for circle in circles:
+			ball_ys.append(circle[1]) # append ball's y-position to ball_ys
+			if (circle[0] + circle[2]) < 460: # center (x) + radius (r), where 460 pixel refers to the white line (i.e. the column number 460)
+				in_out.append("out")
+			else:
+				in_out.append("in")
 			cv2.circle(img_show, (circle[0], circle[1]), circle[2], (0, 0, 255), 2) # draw a circle
-
-	print(ball_out)	
 	# cv2.imshow("Frames", img_show[:, 460:])	
 	cv2.imshow("Frames", img_show)
 	cv2.waitKey(0)
 
-print(f"Ball out: {ball_out}")
+print(ball_ys)
+print(in_out)
+
+y_max_index = np.argmax(ball_ys) # select index for max y
+print(f"Ball out? {in_out[y_max_index]}")
 cv2.destroyAllWindows()
